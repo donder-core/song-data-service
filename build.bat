@@ -1,0 +1,1 @@
+dotnet build song-data-service/SongDataService.csproj --configuration Release --self-contained -p:PublishSingleFile=true

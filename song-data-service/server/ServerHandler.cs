@@ -8,14 +8,13 @@ namespace SongDataService
     public class ServerHandler
     {
         private HttpListener _listener = new();
-        private readonly string _url = "http://localhost:8181/";
 
         public async Task StartAsync()
         {
-            _listener.Prefixes.Add(_url);
+            _listener.Prefixes.Add(APISettings.SERVER_URL);
             _listener.Start();
 
-            Console.WriteLine($"Server opened at {_url}");
+            Console.WriteLine($"Server opened at {APISettings.SERVER_URL}");
 
             await ListenForRequestsAsync();
         }
@@ -38,63 +37,76 @@ namespace SongDataService
             {
                 Console.WriteLine($"[Request] {DateTime.Now:yyyy/MM/dd HH:mm:ss} - {request.HttpMethod} {request.Url}");
 
+                RequestData requestData = await RequestParser.ParseAsync(request);
+
                 response.Headers.Add("Access-Control-Allow-Methods", "GET, HEAD");
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
 
                 string data = Uri.UnescapeDataString(request.Url?.AbsolutePath ?? "");
                 Dictionary<string, string> queries = [];
-                foreach (string item in (request.Url?.Query ?? "").TrimStart('?').Split('&'))
+                string query = request.Url?.Query ?? "";
+                foreach (string item in query.TrimStart('?').Split('&'))
                 {
                     string[] split = item.Split('=', 2);
                     if (split.Length == 2) queries[Uri.UnescapeDataString(split[0])] = Uri.UnescapeDataString(split[1]);
                 }
 
-                if (queries.Values.Any(value => Regex.IsMatch(value, @"DROP\s+TABLE") || Regex.IsMatch(value, @"TRUNCATE\s+TABLE")))
+                if (Regex.IsMatch(Uri.UnescapeDataString(query), @"DROP\s+TABLE", RegexOptions.IgnoreCase) || Regex.IsMatch(Uri.UnescapeDataString(query), @"TRUNCATE\s+TABLE", RegexOptions.IgnoreCase))
                 {
                     await SendResponseAsync(response, new() {
                         StatusCode = 418,
                         StatusDescription = "Bruh Moment",
-                        Body = JsonConvert.SerializeObject(new { error = 418, message = "🖕" })
+                        Body = JsonConvert.SerializeObject(new ErrorData(418, "Cringe requests are forbidden."))
                         });
                 }
-                else switch (request.HttpMethod)
+                else
                 {
-                    case "HEAD":
-                        response.StatusCode = (int)HttpStatusCode.NoContent;
-                        response.Close();
-                        break;
-                    case "GET":
-                        switch (data)
-                        {
-                            case "/search":
-                                await SendResponseAsync(response, await SearchIDs.Search(
-                                    title: queries.TryGetValue("title", out var title) ? title : null,
-                                    subtitle: queries.TryGetValue("subtitle", out var subtitle) ? subtitle : null,
-                                    genre: queries.TryGetValue("genre", out var genre) ? (int.TryParse(genre, out var genre_result) ? genre_result : null ) : null,
-                                    diff: queries.TryGetValue("diff", out var diff) ? (int.TryParse(diff, out var diff_result) ? diff_result : null ) : null,
-                                    level: queries.TryGetValue("level", out var level) ? (int.TryParse(level, out var level_result) ? level_result : null ) : null,
-                                    useAlias: queries.TryGetValue("use_alias", out var alias) ? alias switch { "true" => true, "false" => false, _ => null } : null
-                                ));
-                                break;
-                            case "/diff":
-                                List<long> ids = [];
-                                List<long> diffs = [1,2,3,4,5];
-                                if (queries.ContainsKey("id"))
-                                    ids = queries["id"].Split(',').Select(item => long.TryParse(item, out long result) ? result : 0).ToList();
-                                if (queries.ContainsKey("diff"))
-                                    diffs = queries["diff"].Split(',').Select(item => long.TryParse(item, out long result) ? result : 0).ToList();
-                                await SendResponseAsync(response, await GetDiff.GetDifficulty(ids.ToArray(), diffs.ToArray()));
-                                break;
-                            default:
-                                response.StatusCode = (int)HttpStatusCode.NotFound;
-                                response.Close();
-                                break;
-                        }
-                        break;
-                    default:
-                        response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                        response.Close();
-                        break;
+                    switch (data)
+                    {
+                        case "/search":
+                            response.AddHeader("Vary", "Accept");
+                            break;
+                    }
+                    switch (request.HttpMethod)
+                    {
+                        // case "OPTIONS":
+                        //     break;
+                        case "HEAD":
+                            response.StatusCode = (int)HttpStatusCode.NoContent;
+                            response.Close();
+                            break;
+                        case "GET":
+                            switch (data)
+                            {
+                                case "/search":
+                                    await SendResponseAsync(response, await SearchIDs.Search(
+                                        request: requestData,
+                                        title: queries.TryGetValue("title", out var title) ? title : null,
+                                        subtitle: queries.TryGetValue("subtitle", out var subtitle) ? subtitle : null,
+                                        genre: queries.TryGetValue("genre", out var genre) ? (int.TryParse(genre, out var genre_result) ? genre_result : null ) : null,
+                                        diff: queries.TryGetValue("diff", out var diff) ? (int.TryParse(diff, out var diff_result) ? diff_result : null ) : null,
+                                        level: queries.TryGetValue("level", out var level) ? (int.TryParse(level, out var level_result) ? level_result : null ) : null,
+                                        includeSayonara: queries.TryGetValue("include_sayonara", out var sayonara) ? sayonara switch { "true" => true, "false" => false, _ => null } : null,
+                                        useAlias: queries.TryGetValue("use_alias", out var alias) ? alias switch { "true" => true, "false" => false, _ => null } : null
+                                    ));
+                                    break;
+                                case "/song":
+                                    long[] song_ids = [];
+                                    if (queries.ContainsKey("id"))
+                                        song_ids = queries["id"].Split(',').Select(item => long.TryParse(item, out long result) ? result : 0).ToArray();
+                                    await SendResponseAsync(response, await GetSong.Songs(requestData, song_ids));
+                                    break;
+                                default:
+                                    response.StatusCode = (int)HttpStatusCode.NotFound;
+                                    response.Close();
+                                    break;
+                            }
+                            break;
+                        default:
+                            response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+                            response.Close();
+                            break;
+                    }
                 }
                 Console.WriteLine($"[Response] {DateTime.Now:yyyy/MM/dd HH:mm:ss} - {response.StatusCode} {request.Url}");
             }
@@ -126,7 +138,7 @@ namespace SongDataService
             response.StatusCode = 500;
             response.ContentType = "application/json";
 
-            string error = JsonConvert.SerializeObject(new { error = "Internal Server Error", message = ex.Message });
+            string error = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, ex.Message));
 
             byte[] buffer = Encoding.UTF8.GetBytes(error);
             response.ContentLength64 = buffer.Length;
@@ -134,7 +146,7 @@ namespace SongDataService
 
             response.Close();
 
-            Console.WriteLine($"[Response] {DateTime.Now:yyyy/MM/dd HH:mm:ss} - {response.StatusCode} - {error}");
+            Console.WriteLine($"[Response] {DateTime.Now:yyyy/MM/dd HH:mm:ss} - {response.StatusCode} - {ex}");
         }
     }
 }

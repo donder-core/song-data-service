@@ -7,6 +7,5 @@
             var server = new ServerHandler();
             await server.StartAsync();
         }
-
     }
 }

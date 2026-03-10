@@ -5,14 +5,21 @@ namespace SongDataService;
 
 public class SearchIDs
 {
-    public static async Task<ResponseData> Search(string? title = null, string? subtitle = null, int? genre = null, int? diff = null, int? level = null, bool? useAlias = null)
+    public static async Task<ResponseData> Search(RequestData request, string? title = null, string? subtitle = null, int? genre = null, int? diff = null, int? level = null, bool? useAlias = null, bool? includeSayonara = null, int? limit = null)
     {
         ResponseData response = new();
-        response.ContentType = "application/json";
+
+        if (request.Headers.TryGetValue("accept", out string? type) && !type.Contains("application/json") && !type.Contains("text/plain") && !type.Contains("*/*"))
+        {
+            response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
+            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, "None of the content type(s) requested are supported."));
+            return response;
+        }
 
         if (title is null && subtitle is null && genre is null && diff is null && level is null)
         {
             response.Body = "[]";
+            response.StatusCode = (int)HttpStatusCode.OK;
             return response;
         }
 
@@ -21,23 +28,24 @@ public class SearchIDs
         if (genre != null && (genre < 1 || genre > 8))
         {
             response.StatusCode = (int)HttpStatusCode.UnprocessableContent;
-            response.Body = JsonConvert.SerializeObject(new { error = response.StatusCode, message = $"'{genre}' is not a valid genre. Please only use an integer valued between 1~8."});
+            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, $"'{genre}' is not a valid genre ID."));
             return response;
         }
         if (diff != null && (diff < 1 || diff > 5))
         {
             response.StatusCode = (int)HttpStatusCode.UnprocessableContent;
-            response.Body = JsonConvert.SerializeObject(new { error = response.StatusCode, message = $"'{diff}' is not a valid difficulty. Please only use an integer valued between 1~5."});
+            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, $"'{diff}' is not a valid difficulty ID."));
             return response;
         }
         if (level != null && (level < 1 || level > 10))
         {
             response.StatusCode = (int)HttpStatusCode.UnprocessableContent;
-            response.Body = JsonConvert.SerializeObject(new { error = response.StatusCode, message = $"'{level}' is not a valid level. Please only use an integer valued between 1~10."});
+            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, $"'{level}' is not a valid level."));
             return response;
         }
 
         DatabaseHandler database = new();
+        int song_limit = Math.Clamp(limit ?? APISettings.SONG_LIMIT, 0, APISettings.SONG_LIMIT);
 
         long[] title_ids = title != null ? SearchByTitle(ref database, title, useAlias ?? true) : [];
         long[] subtitle_ids = subtitle != null ? SearchBySubtitle(ref database, subtitle) : [];
@@ -45,31 +53,31 @@ public class SearchIDs
         long[] diff_ids = diff != null ? SearchByDifficulty(ref database, diff ?? 4) : [];
         long[] level_ids = level != null ? SearchByLevel(ref database, level ?? 0) : [];
 
-        foreach (long[] list in new long[][] {title_ids, subtitle_ids, genre_ids, diff_ids, level_ids})
-        {
-            if (list.Count() > 0)
-            {
-                results = list.ToList();
-                break;
-            }
-        }
-        if (results.Count > 0)
-        {
-            if (title != null) results = results.Intersect(title_ids).ToList();
-            if (subtitle != null) results = results.Intersect(subtitle_ids).ToList();
-            if (genre != null) results = results.Intersect(genre_ids).ToList();
-            if (diff != null) results = results.Intersect(diff_ids).ToList();
-            if (level != null) results = results.Intersect(level_ids).ToList();
-        }
+        results = FilterSayonara(ref database, includeSayonara is not null and true).ToList();
+        if (title != null) results = results.Intersect(title_ids).ToList();
+        if (subtitle != null) results = results.Intersect(subtitle_ids).ToList();
+        if (genre != null) results = results.Intersect(genre_ids).ToList();
+        if (diff != null) results = results.Intersect(diff_ids).ToList();
+        if (level != null) results = results.Intersect(level_ids).ToList();
+
+        results = results.Take(song_limit).ToList();
 
         database.Dispose();
 
+        string content_type = request.Headers.TryGetValue("accept", out string? value) ? value.Trim() : "";
+        if (content_type.StartsWith("text/plain"))
+        {
+            response.ContentType = "text/plain; charset=utf-8";
+            response.Body = string.Join(',', results);
+        }
+        else
+            response.Body = JsonConvert.SerializeObject(results);
+
         response.StatusCode = (int)HttpStatusCode.OK;
-        response.Body = JsonConvert.SerializeObject(results.ToArray());
 
         return response;
     }
-    private static long[] SearchByTitle(ref DatabaseHandler database, string title, bool useAlias = true)
+    private static long[] SearchByTitle(ref DatabaseHandler database, string title, bool useAlias)
     {
         string query = @$"
         SELECT DISTINCT title.id FROM title
@@ -126,7 +134,6 @@ public class SearchIDs
         OR genre.subgenre IS {genre}
         OR genre.subgenre2 IS {genre}
         ";
-
         return ProcessResult(database.Query(query));
     }
 
@@ -146,6 +153,19 @@ public class SearchIDs
         SELECT DISTINCT chart.id FROM chart
         WHERE chart.level = {level}
         ";
+
+        return ProcessResult(database.Query(query));
+    }
+
+    private static long[] FilterSayonara(ref DatabaseHandler database, bool include_sayonara)
+    {
+        string query = @$"
+        SELECT DISTINCT region.id FROM region
+        WHERE (region.japan IS NOT 0 OR region.asia IS NOT 0 OR region.oceania IS NOT 0 OR region.china IS NOT 0 OR region.'united-states' IS NOT 0)";
+
+        if (include_sayonara)
+        query = @$"
+        SELECT DISTINCT region.id FROM region";
 
         return ProcessResult(database.Query(query));
     }

@@ -12,7 +12,7 @@ namespace SongDataService
         public string Body { get; set; } = "";
     }
 
-    public class RequestParser
+    public static class RequestParser
     {
         public static async Task<RequestData> ParseAsync(HttpListenerRequest request)
         {
@@ -32,7 +32,7 @@ namespace SongDataService
             foreach (string? key in headers.AllKeys)
             {
                 if (key is null) continue;
-                result[key] = headers[key] ?? "";
+                result[key.ToLower()] = headers[key] ?? "";
             }
             return result;
         }

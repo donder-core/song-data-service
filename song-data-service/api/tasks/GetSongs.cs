@@ -227,6 +227,11 @@ public class GetSong
                 Song song = songs[id];
 
                 if (!song.chart_list.ContainsKey(diff)) song.chart_list[diff] = new();
+                
+                var temp = song.chart_list[diff];
+                temp.level = (long?)result["level"] ?? 0;
+                song.chart_list[diff] = temp;
+
                 song.chart_list[diff].style_list[(long?)result["style"] ?? 0] = new() { normal = (long?)result["normal"] ?? 0, expert = (long?)result["expert"], master = (long?)result["master"] };
 
                 songs[id] = song;

@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Content Include="data/**" CopyToOutputDirectory="PreserveNewest" Condition="Exists('data/')"/>
+    <Content Include="doc/**" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
 </Project>

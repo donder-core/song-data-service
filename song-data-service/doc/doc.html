@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+    <head>
+        <style>
+            body {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                font-size: 1rem;
+                background: #EEE;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            pre {
+                padding: 12px;
+                border-radius: 5px;
+                color: white;
+                background: #444;
+                font-size: 0.8rem;
+                overflow-x: auto;
+            }
+            code {
+                font-family: monospace;
+                border-radius: 5px;
+                padding: 1px 4px;
+                color: white;
+                background: #666;
+            }
+            small {
+                color: #444;
+            }
+
+            /* Section */
+            section {
+                background: white;
+                padding: 12px 24px;
+                margin: 1.5rem;
+                border-radius: 12px;
+            }
+
+            /* Methods */
+            .method {
+                margin: 3px;
+                padding: 2px 4px;
+                border-radius: 4px;
+                font-size: 1.25rem;
+            }
+            .get {
+                background: #e7f5e7;
+                color: #1b7a1b;
+            }
+            .get::after {
+                content: "GET";
+            }
+            .endpoint {
+                font-family: monospace;
+            }
+
+            /* Fields */
+            .field {
+                padding: 5px;
+                text-align: left;
+                border: 0;
+            }
+            .field th {
+                border-bottom: 1px solid #DDD;
+                padding-bottom: 4px;
+            }
+            .field td {
+                padding-right: 24px;
+                padding-top: 6px;
+            }
+        </style>
+    </head>
+    <body>
+        <section>
+            <h2><span class="method get"></span><span class="method endpoint">/song</span></h2>
+            <p>Fetch info about each song requested.</p>
+            <table class="field">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td>integer[]</td>
+                        <td>Comma-separated list of song IDs.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>Example:</h3>
+            <pre class="response">/song?id=765</pre>
+            <h3>Response:</h3>
+            <pre class="response">{"765":{"title_list":{"ja":"第六天魔王","en-US":"Demon King of the Sixth Heaven","ko":"Demon King of the Sixth Heaven","zh-TW":"第六天魔王","zh-CN":"Demon King of the Sixth Heaven"},"subtitle_list":{"ja":"黒沢ダイスケ × Masahiro \"Godspeed\" Aoki","en-US":"Daisuke Kurosawa × Masahiro \"Godspeed\" Aoki","zh-TW":"Daisuke Kurosawa × Masahiro \"Godspeed\" Aoki","zh-CN":"Daisuke Kurosawa x Masahiro \"Godspeed\" Aoki"},"alias_list":{"ko":"제육천마왕","romaji":"Dairokuten Maou"},"genre":6,"genre_list":[6],"region_list":{"japan":1,"asia":1,"oceania":1,"united-states":1,"china":1},"chart_list":{"1":{"level":0,"style_list":{"0":{"normal":496}},"source_list":{"taiko-fumen":"https://wikiwiki.jp/taiko-fumen/%E5%8F%8E%E9%8C%B2%E6%9B%B2/%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93/%E7%AC%AC%E5%85%AD%E5%A4%A9%E9%AD%94%E7%8E%8B","taiko-wiki":"https://taiko.wiki/song/765?diff=easy"}},"2":{"level":0,"style_list":{"0":{"normal":696}},"source_list":{"taiko-fumen":"https://wikiwiki.jp/taiko-fumen/%E5%8F%8E%E9%8C%B2%E6%9B%B2/%E3%81%B5%E3%81%A4%E3%81%86/%E7%AC%AC%E5%85%AD%E5%A4%A9%E9%AD%94%E7%8E%8B","taiko-wiki":"https://taiko.wiki/song/765?diff=normal"}},"3":{"level":0,"style_list":{"0":{"normal":966}},"source_list":{"taiko-fumen":"https://wikiwiki.jp/taiko-fumen/%E5%8F%8E%E9%8C%B2%E6%9B%B2/%E3%82%80%E3%81%9A%E3%81%8B%E3%81%97%E3%81%84/%E7%AC%AC%E5%85%AD%E5%A4%A9%E9%AD%94%E7%8E%8B","taiko-wiki":"https://taiko.wiki/song/765?diff=hard"}},"4":{"level":0,"style_list":{"0":{"normal":1396}},"source_list":{"taiko-fumen":"https://wikiwiki.jp/taiko-fumen/%E5%8F%8E%E9%8C%B2%E6%9B%B2/%E3%81%8A%E3%81%AB/%E7%AC%AC%E5%85%AD%E5%A4%A9%E9%AD%94%E7%8E%8B","taiko-wiki":"https://taiko.wiki/song/765?diff=oni"}},"5":{"level":0,"style_list":{"0":{"normal":1582}},"source_list":{"taiko-fumen":"https://wikiwiki.jp/taiko-fumen/%E5%8F%8E%E9%8C%B2%E6%9B%B2/%E3%81%8A%E3%81%AB/%E7%AC%AC%E5%85%AD%E5%A4%A9%E9%AD%94%E7%8E%8B%28%E8%A3%8F%E8%AD%9C%E9%9D%A2%29","taiko-wiki":"https://taiko.wiki/song/765?diff=ura"}}}}}</pre>
+            <small>Note: Your results may be limited, as the server can determine the maximum number of results to return.</small>
+        </section>
+        <section>
+            <h2><span class="method get"></span><span class="method endpoint">/random</span></h2>
+            <p>Fetch info about randomly selected songs.</p>
+            <table class="field">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>integer</td>
+                        <td>(Optional) Specify how many songs can be returned in a single request. Default value is <code>1</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>include_sayonara</code></td>
+                        <td>boolean</td>
+                        <td>(Optional) Include songs which are no longer available in all countries. Default value is <code>false</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>Example:</h3>
+            <pre class="response">/random?limit=5</pre>
+            <small>Note: Your results may be limited, as the server can determine the maximum number of results to return.</small>
+        </section>
+        <section>
+            <h2><span class="method get"></span><span class="method endpoint">/search</span></h2>
+            <p>Search for song IDs with the given parameters.</p>
+            <table class="field">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>title</code></td>
+                        <td>string</td>
+                        <td>(Optional) Segment of a song's title. Searches all official titles. Also searches unofficial titles if <code>use_alias</code> is allowed.</td>
+                    </tr>
+                    <tr>
+                        <td><code>subtitle</code></td>
+                        <td>string</td>
+                        <td>(Optional) Segment of a song's subtitle. Searches all official subtitles.</td>
+                    </tr>
+                    <tr>
+                        <td><code>genre</code></td>
+                        <td>integer</td>
+                        <td>(Optional) The ID of a genre. Can be one of the following: <br/>
+                            <code>1</code> (Pop), <code>2</code> (Anime), <code>3</code> (Kids), <code>4</code> (Vocaloid), <code>5</code> (Game Music), <code>6</code> (Namco Original), <code>7</code> (Variety), <code>8</code> (Classical)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>diff</code></td>
+                        <td>integer</td>
+                        <td>(Optional) The ID of a difficulty. Can be one of the following: <br/>
+                            <code>1</code> (Easy), <code>2</code> (Normal), <code>3</code> (Hard), <code>4</code> (Oni), <code>5</code> (Ura)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>level</code></td>
+                        <td>integer</td>
+                        <td>(Optional) The level of a given chart. If <code>diff</code> is not specified, it will search all difficulties that have the given level. Must be between <code>1</code>-<code>10</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>include_sayonara</code></td>
+                        <td>boolean</td>
+                        <td>(Optional) Include songs which are no longer available in all countries. Default value is <code>false</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>use_alias</code></td>
+                        <td>boolean</td>
+                        <td>(Optional) Use unofficial/alias titles when searching for songs via. <code>title</code>. Default value is <code>true</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>title_comparison</code></td>
+                        <td>string</td>
+                        <td>(Optional) Determine how to compare the results of <code>title</code> and <code>subtitle</code>. When set to <code>and</code>, only return the IDs that match both conditions. When set to <code>or</code>, return IDs that match either conditions. Default value is <code>and</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>integer</td>
+                        <td>(Optional) Specify a maximum amount of IDs to return. Default value is specified by the server.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3>Example:</h3>
+            <pre class="response">/search?title=taiko&level=10</pre>
+            <h3>Response:</h3>
+            <pre class="response">[425,593,879,1066,1072]</pre>
+            <small>Note: Your results may be limited, as the server can determine the maximum number of results to return.</small>
+        </section>
+    </body>
+</html>

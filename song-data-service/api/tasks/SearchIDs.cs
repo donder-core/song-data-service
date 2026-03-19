@@ -5,9 +5,11 @@ namespace SongDataService;
 
 public class SearchIDs
 {
-    public static async Task<ResponseData> Search(RequestData request, string? title = null, string? subtitle = null, int? genre = null, int? diff = null, int? level = null, bool? useAlias = null, bool? includeSayonara = null, int? limit = null)
+    private static Dictionary<long, long> _sortScore = [];
+    public static async Task<ResponseData> Search(RequestData request, string? title = null, string? subtitle = null, int? genre = null, int? diff = null, int? level = null, bool? useAlias = null, bool? includeSayonara = null, bool? titleComparison = null, int? limit = null)
     {
         ResponseData response = new();
+        _sortScore = [];
 
         if (request.Headers.TryGetValue("accept", out string? type) && !type.Contains("application/json") && !type.Contains("text/plain") && !type.Contains("*/*"))
         {
@@ -55,11 +57,12 @@ public class SearchIDs
 
         results = FilterSayonara(ref database, includeSayonara is not null and true).ToList();
         if (title != null) results = results.Intersect(title_ids).ToList();
-        if (subtitle != null) results = results.Intersect(subtitle_ids).ToList();
+        if (subtitle != null) results = (titleComparison is not null and false) && (title != null) ? results.Union(subtitle_ids).ToList() : results.Intersect(subtitle_ids).ToList();
         if (genre != null) results = results.Intersect(genre_ids).ToList();
         if (diff != null) results = results.Intersect(diff_ids).ToList();
         if (level != null) results = results.Intersect(level_ids).ToList();
 
+        results.Sort();
         results = results.Take(song_limit).ToList();
 
         database.Dispose();

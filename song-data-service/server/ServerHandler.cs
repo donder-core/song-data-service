@@ -87,7 +87,9 @@ namespace SongDataService
                                         diff: queries.TryGetValue("diff", out var diff) ? (int.TryParse(diff, out var diff_result) ? diff_result : null ) : null,
                                         level: queries.TryGetValue("level", out var level) ? (int.TryParse(level, out var level_result) ? level_result : null ) : null,
                                         includeSayonara: queries.TryGetValue("include_sayonara", out var sayonara) ? sayonara switch { "true" => true, "false" => false, _ => null } : null,
-                                        useAlias: queries.TryGetValue("use_alias", out var alias) ? alias switch { "true" => true, "false" => false, _ => null } : null
+                                        useAlias: queries.TryGetValue("use_alias", out var alias) ? alias switch { "true" => true, "false" => false, _ => null } : null,
+                                        titleComparison: queries.TryGetValue("title_comparison", out var title_comparison) ? title_comparison switch { "and" => true, "or" => false, _ => null } : null,
+                                        limit: queries.TryGetValue("limit", out var limit) ? (int.TryParse(limit, out var limit_result) ? limit_result : null) : null
                                     ));
                                     break;
                                 case "/song":
@@ -95,6 +97,20 @@ namespace SongDataService
                                     if (queries.ContainsKey("id"))
                                         song_ids = queries["id"].Split(',').Select(item => long.TryParse(item, out long result) ? result : 0).ToArray();
                                     await SendResponseAsync(response, await GetSong.Songs(requestData, song_ids));
+                                    break;
+                                case "/random":
+                                    await SendResponseAsync(response, await GetSong.RandomSongs(
+                                        request: requestData,
+                                        includeSayonara: queries.TryGetValue("include_sayonara", out var ran_sayonara) ? ran_sayonara switch { "true" => true, "false" => false, _ => null } : null,
+                                        limit: queries.TryGetValue("limit", out var ran_limit) ? (int.TryParse(ran_limit, out int ran_limit_result) ? ran_limit_result : null) : null
+                                    ));
+                                    break;
+                                case "/docs":
+                                    await SendResponseAsync(response, new()
+                                    {
+                                        ContentType = "text/html; charset=utf-8",
+                                        Body = File.ReadAllText("doc/doc.html")
+                                    });
                                     break;
                                 default:
                                     response.StatusCode = (int)HttpStatusCode.NotFound;
@@ -136,7 +152,7 @@ namespace SongDataService
         private async Task HandleErrorAsync(HttpListenerResponse response, Exception ex)
         {
             response.StatusCode = 500;
-            response.ContentType = "application/json";
+            response.ContentType = "application/json; charset=utf-8";
 
             string error = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, ex.Message));
 

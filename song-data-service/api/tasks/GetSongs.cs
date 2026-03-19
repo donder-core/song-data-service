@@ -40,11 +40,13 @@ public class GetSong
         public Song() { title_list = []; subtitle_list = []; alias_list = []; genre = 0; genre_list = []; region_list = []; chart_list = []; }
     }
 
+    private static bool ContentTypeNotAllowed(RequestData request) => request.Headers.TryGetValue("accept", out string? type) && !type.Contains("application/json") && !type.Contains("*/*");
+
     public static async Task<ResponseData> Songs(RequestData request, long[] ids)
     {
         ResponseData response = new();
 
-        if (request.Headers.TryGetValue("accept", out string? type) && !type.Contains("application/json") && !type.Contains("*/*"))
+        if (ContentTypeNotAllowed(request))
         {
             response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
             response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, "None of the content type(s) requested are supported."));
@@ -236,5 +238,45 @@ public class GetSong
         }
 
         return response;
+    }
+
+    public static async Task<ResponseData> RandomSongs(RequestData request, bool? includeSayonara = null, int? limit = null)
+    {
+
+        if (ContentTypeNotAllowed(request))
+        {
+            ResponseData response = new();
+            response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
+            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, "None of the content type(s) requested are supported."));
+            return response;
+        }
+
+        DatabaseHandler database = new();
+        int count = int.Clamp(limit ?? 1, 1, APISettings.SONG_LIMIT);
+
+        string query = @$"
+        SELECT DISTINCT region.id FROM region
+        WHERE (region.japan IS NOT 0 OR region.asia IS NOT 0 OR region.oceania IS NOT 0 OR region.china IS NOT 0 OR region.'united-states' IS NOT 0)";
+
+        if (includeSayonara ?? false)
+        query = @$"
+        SELECT DISTINCT region.id FROM region";
+
+        var result = database.Query(query);
+
+        List<long> ids = [];
+        foreach (var item in result.Values)
+        {
+            if (item["id"] != null)
+            ids.Add((long)(item["id"] ?? 0));
+        }
+
+        if (ids.Count > 1)
+        {
+            Random ran = new();
+            ids = ids.OrderBy(item => ran.Next()).Take(count).ToList();
+        }
+
+        return await Songs(request, ids.ToArray());
     }
 }

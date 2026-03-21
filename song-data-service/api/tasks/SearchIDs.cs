@@ -153,8 +153,8 @@ public class SearchIDs
     private static long[] SearchByLevel(ref DatabaseHandler database, int level)
     {
         string query = @$"
-        SELECT DISTINCT chart.id FROM chart
-        WHERE chart.level = {level}
+        SELECT DISTINCT level.id FROM level
+        WHERE level.level = {level}
         ";
 
         return ProcessResult(database.Query(query));

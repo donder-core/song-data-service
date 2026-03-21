@@ -215,7 +215,8 @@ public class GetSong
 
             #region Charts
             query = @$"
-            SELECT * FROM chart
+            SELECT chart.*, level.level FROM chart
+            INNER JOIN level ON chart.id = level.id AND chart.diff = level.diff
             WHERE chart.id IN ({id_list})";
 
             results = database.Query(query);

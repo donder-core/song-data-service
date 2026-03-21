@@ -101,6 +101,9 @@ namespace SongDataService
                                 case "/random":
                                     await SendResponseAsync(response, await GetSong.RandomSongs(
                                         request: requestData,
+                                        diff: queries.TryGetValue("diff", out var ran_diff) ? (int.TryParse(ran_diff, out int ran_diff_result) ? ran_diff_result : null) : null,
+                                        level: queries.TryGetValue("level", out var ran_level) ? (int.TryParse(ran_level, out int ran_level_result) ? ran_level_result : null) : null,
+                                        genre: queries.TryGetValue("genre", out var ran_genre) ? (int.TryParse(ran_genre, out int ran_genre_result) ? ran_genre_result : null) : null,
                                         includeSayonara: queries.TryGetValue("include_sayonara", out var ran_sayonara) ? ran_sayonara switch { "true" => true, "false" => false, _ => null } : null,
                                         limit: queries.TryGetValue("limit", out var ran_limit) ? (int.TryParse(ran_limit, out int ran_limit_result) ? ran_limit_result : null) : null
                                     ));

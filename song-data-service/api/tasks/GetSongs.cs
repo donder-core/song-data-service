@@ -246,7 +246,7 @@ public class GetSong
         return response;
     }
 
-    public static async Task<ResponseData> RandomSongs(RequestData request, bool? includeSayonara = null, int? limit = null)
+    public static async Task<ResponseData> RandomSongs(RequestData request, int? diff = null, int? level = null, int? genre = null, bool? includeSayonara = null, int? limit = null)
     {
 
         if (ContentTypeNotAllowed(request))
@@ -259,23 +259,15 @@ public class GetSong
 
         DatabaseHandler database = new();
         int count = int.Clamp(limit ?? 1, 1, APISettings.SONG_LIMIT);
+        
+        List<long> diff_ids = diff is not null ? SearchIDs.SearchByDifficulty(ref database, (int)diff).ToList() : [];
+        List<long> level_ids = level is not null ? SearchIDs.SearchByLevel(ref database, (int)level).ToList() : [];
+        List<long> genre_ids = genre is not null ? SearchIDs.SearchByGenre(ref database, (int)genre).ToList() : [];
 
-        string query = @$"
-        SELECT DISTINCT region.id FROM region
-        WHERE (region.japan IS NOT 0 OR region.asia IS NOT 0 OR region.oceania IS NOT 0 OR region.china IS NOT 0 OR region.'united-states' IS NOT 0)";
-
-        if (includeSayonara ?? false)
-        query = @$"
-        SELECT DISTINCT region.id FROM region";
-
-        var result = database.Query(query);
-
-        List<long> ids = [];
-        foreach (var item in result.Values)
-        {
-            if (item["id"] != null)
-            ids.Add((long)(item["id"] ?? 0));
-        }
+        List<long> ids = SearchIDs.FilterSayonara(ref database, includeSayonara ?? false).ToList();
+        if (diff is not null) ids = ids.Intersect(diff_ids).ToList();
+        if (level is not null) ids = ids.Intersect(level_ids).ToList();
+        if (genre is not null) ids = ids.Intersect(genre_ids).ToList();
 
         if (ids.Count > 1)
         {

@@ -80,7 +80,7 @@ public class SearchIDs
 
         return response;
     }
-    private static long[] SearchByTitle(ref DatabaseHandler database, string title, bool useAlias)
+    public static long[] SearchByTitle(ref DatabaseHandler database, string title, bool useAlias)
     {
         string query = @$"
         SELECT DISTINCT title.id FROM title
@@ -115,7 +115,7 @@ public class SearchIDs
         return ProcessResult(database.Query(query));
     }
 
-    private static long[] SearchBySubtitle(ref DatabaseHandler database, string subtitle)
+    public static long[] SearchBySubtitle(ref DatabaseHandler database, string subtitle)
     {
         string query = @$"
         SELECT subtitle.id FROM subtitle
@@ -129,7 +129,7 @@ public class SearchIDs
         return ProcessResult(database.Query(query));
     }
 
-    private static long[] SearchByGenre(ref DatabaseHandler database, int genre)
+    public static long[] SearchByGenre(ref DatabaseHandler database, int genre)
     {
         string query = @$"
         SELECT genre.id FROM genre
@@ -140,7 +140,7 @@ public class SearchIDs
         return ProcessResult(database.Query(query));
     }
 
-    private static long[] SearchByDifficulty(ref DatabaseHandler database, int difficulty)
+    public static long[] SearchByDifficulty(ref DatabaseHandler database, int difficulty)
     {
         string query = @$"
         SELECT DISTINCT chart.id FROM chart
@@ -150,7 +150,7 @@ public class SearchIDs
         return ProcessResult(database.Query(query));
     }
 
-    private static long[] SearchByLevel(ref DatabaseHandler database, int level)
+    public static long[] SearchByLevel(ref DatabaseHandler database, int level)
     {
         string query = @$"
         SELECT DISTINCT level.id FROM level
@@ -160,7 +160,7 @@ public class SearchIDs
         return ProcessResult(database.Query(query));
     }
 
-    private static long[] FilterSayonara(ref DatabaseHandler database, bool include_sayonara)
+    public static long[] FilterSayonara(ref DatabaseHandler database, bool include_sayonara)
     {
         string query = @$"
         SELECT DISTINCT region.id FROM region

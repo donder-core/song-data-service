@@ -111,6 +111,36 @@
                 </thead>
                 <tbody>
                     <tr>
+                        <td><code>genre</code></td>
+                        <td>integer</td>
+                        <td>(Optional) The ID of a genre. Can be one of the following:
+                            <br/><code>1</code> (Pop)
+                            <br/><code>2</code> (Anime)
+                            <br/><code>3</code> (Kids)
+                            <br/><code>4</code> (Vocaloid)
+                            <br/><code>5</code> (Game Music)
+                            <br/><code>6</code> (Namco Original)
+                            <br/><code>7</code> (Variety)
+                            <br/><code>8</code> (Classical)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>diff</code></td>
+                        <td>integer</td>
+                        <td>(Optional) The ID of a difficulty. Can be one of the following: 
+                            <br/><code>1</code> (Easy)
+                            <br/><code>2</code> (Normal)
+                            <br/><code>3</code> (Hard)
+                            <br/><code>4</code> (Oni)
+                            <br/><code>5</code> (Ura)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>level</code></td>
+                        <td>integer</td>
+                        <td>(Optional) The level of a given chart. If <code>diff</code> is not specified, it will search all difficulties that have the given level. Must be between <code>1</code>-<code>10</code>.</td>
+                    </tr>
+                    <tr>
                         <td><code>limit</code></td>
                         <td>integer</td>
                         <td>(Optional) Specify how many songs can be returned in a single request. Default value is <code>1</code>.</td>
@@ -210,7 +240,7 @@
             <h1>Values</h1>
         </section>
         <section>
-            <h2><span class="method get"></span><span class="method endpoint">/song</span></h2>
+            <h2><span class="method get"></span><span class="method endpoint">/song</span> or <span class="method get"></span><span class="method endpoint">/random</span></h2>
             <table class="field">
                 <thead>
                     <tr>

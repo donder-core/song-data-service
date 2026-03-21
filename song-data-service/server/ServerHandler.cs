@@ -51,7 +51,7 @@ namespace SongDataService
                     if (split.Length == 2) queries[Uri.UnescapeDataString(split[0])] = Uri.UnescapeDataString(split[1]);
                 }
 
-                if (Regex.IsMatch(Uri.UnescapeDataString(query), @"DROP\s+TABLE", RegexOptions.IgnoreCase) || Regex.IsMatch(Uri.UnescapeDataString(query), @"TRUNCATE\s+TABLE", RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(Uri.UnescapeDataString(query), @"DROP\s+TABLE", RegexOptions.IgnoreCase) || Regex.IsMatch(Uri.UnescapeDataString(query), @"TRUNCATE\s+TABLE", RegexOptions.IgnoreCase) || Regex.IsMatch(Uri.UnescapeDataString(query), @"DELETE\s+FROM", RegexOptions.IgnoreCase))
                 {
                     await SendResponseAsync(response, new() {
                         StatusCode = 418,

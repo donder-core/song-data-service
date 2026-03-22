@@ -87,7 +87,7 @@ public class GetIDs
         WHERE title.id IN
         (
         SELECT title.id FROM title
-        INNER JOIN alias ON title.id = alias.id
+        LEFT JOIN alias ON title.id = alias.id
         WHERE title.'ja' LIKE '%{title.Sqlite_EscapeForLike()}%' ESCAPE '{SqliteExtensions.Sqlite_EscapeChar}'
         OR title.'en-US' LIKE '%{title.Sqlite_EscapeForLike()}%' ESCAPE '{SqliteExtensions.Sqlite_EscapeChar}'
         OR title.'ko' LIKE '%{title.Sqlite_EscapeForLike()}%' ESCAPE '{SqliteExtensions.Sqlite_EscapeChar}'

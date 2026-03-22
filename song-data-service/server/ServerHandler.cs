@@ -79,7 +79,7 @@ namespace SongDataService
                             switch (data)
                             {
                                 case "/search":
-                                    await SendResponseAsync(response, await SearchIDs.Search(
+                                    await SendResponseAsync(response, await GetIDs.Search(
                                         request: requestData,
                                         title: queries.TryGetValue("title", out var title) ? title : null,
                                         subtitle: queries.TryGetValue("subtitle", out var subtitle) ? subtitle : null,

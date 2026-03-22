@@ -260,11 +260,11 @@ public class GetSong
         DatabaseHandler database = new();
         int count = int.Clamp(limit ?? 1, 1, APISettings.SONG_LIMIT);
         
-        List<long> diff_ids = diff is not null ? SearchIDs.SearchByDifficulty(ref database, (int)diff).ToList() : [];
-        List<long> level_ids = level is not null ? SearchIDs.SearchByLevel(ref database, (int)level).ToList() : [];
-        List<long> genre_ids = genre is not null ? SearchIDs.SearchByGenre(ref database, (int)genre).ToList() : [];
+        List<long> diff_ids = diff is not null ? GetIDs.SearchByDifficulty(ref database, (int)diff).ToList() : [];
+        List<long> level_ids = level is not null ? GetIDs.SearchByLevel(ref database, (int)level).ToList() : [];
+        List<long> genre_ids = genre is not null ? GetIDs.SearchByGenre(ref database, (int)genre).ToList() : [];
 
-        List<long> ids = SearchIDs.FilterSayonara(ref database, includeSayonara ?? false).ToList();
+        List<long> ids = GetIDs.FilterSayonara(ref database, includeSayonara ?? false).ToList();
         if (diff is not null) ids = ids.Intersect(diff_ids).ToList();
         if (level is not null) ids = ids.Intersect(level_ids).ToList();
         if (genre is not null) ids = ids.Intersect(genre_ids).ToList();

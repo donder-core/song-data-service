@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace SongDataService;
 
-public class SearchIDs
+public class GetIDs
 {
     private static Dictionary<long, long> _sortScore = [];
     public static async Task<ResponseData> Search(RequestData request, string? title = null, string? subtitle = null, int? genre = null, int? diff = null, int? level = null, bool? useAlias = null, bool? includeSayonara = null, bool? titleComparison = null, int? limit = null)

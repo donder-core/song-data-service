@@ -42,9 +42,11 @@ namespace SongDataService
                 response.Headers.Add("Access-Control-Allow-Methods", "GET, HEAD");
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
 
-                string data = Uri.UnescapeDataString(request.Url?.AbsolutePath ?? "");
                 Dictionary<string, string> queries = [];
                 string query = request.Url?.Query ?? "";
+                string data = Uri.UnescapeDataString((request.Url?.AbsoluteUri ?? "").Replace(APISettings.SERVER_URL, ""));
+                if (!string.IsNullOrWhiteSpace(query)) data = data.Replace(query, "");
+
                 foreach (string item in query.TrimStart('?').Split('&'))
                 {
                     string[] split = item.Split('=', 2);
@@ -61,12 +63,6 @@ namespace SongDataService
                 }
                 else
                 {
-                    switch (data)
-                    {
-                        case "/search":
-                            response.AddHeader("Vary", "Accept");
-                            break;
-                    }
                     switch (request.HttpMethod)
                     {
                         // case "OPTIONS":
@@ -78,7 +74,7 @@ namespace SongDataService
                         case "GET":
                             switch (data)
                             {
-                                case "/search":
+                                case "search":
                                     await SendResponseAsync(response, await GetIDs.Search(
                                         request: requestData,
                                         title: queries.TryGetValue("title", out var title) ? title : null,
@@ -92,13 +88,13 @@ namespace SongDataService
                                         limit: queries.TryGetValue("limit", out var limit) ? (int.TryParse(limit, out var limit_result) ? limit_result : null) : null
                                     ));
                                     break;
-                                case "/song":
+                                case "song":
                                     long[] song_ids = [];
                                     if (queries.ContainsKey("id"))
                                         song_ids = queries["id"].Split(',').Select(item => long.TryParse(item, out long result) ? result : 0).ToArray();
                                     await SendResponseAsync(response, await GetSong.Songs(requestData, song_ids));
                                     break;
-                                case "/random":
+                                case "random":
                                     await SendResponseAsync(response, await GetSong.RandomSongs(
                                         request: requestData,
                                         diff: queries.TryGetValue("diff", out var ran_diff) ? (int.TryParse(ran_diff, out int ran_diff_result) ? ran_diff_result : null) : null,
@@ -108,7 +104,7 @@ namespace SongDataService
                                         limit: queries.TryGetValue("limit", out var ran_limit) ? (int.TryParse(ran_limit, out int ran_limit_result) ? ran_limit_result : null) : null
                                     ));
                                     break;
-                                case "/docs":
+                                case "docs":
                                     await SendResponseAsync(response, new()
                                     {
                                         ContentType = "text/html; charset=utf-8",
@@ -127,7 +123,7 @@ namespace SongDataService
                             break;
                     }
                 }
-                Console.WriteLine($"[Response] {DateTime.Now:yyyy/MM/dd HH:mm:ss} - {response.StatusCode} {request.Url}");
+                Console.WriteLine($"[Response] {DateTime.Now:yyyy/MM/dd HH:mm:ss} - {response.StatusCode} ({data}) {request.Url}");
             }
             catch (Exception ex)
             {

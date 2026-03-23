@@ -40,18 +40,10 @@ public class GetSong
         public Song() { title_list = []; subtitle_list = []; alias_list = []; genre = 0; genre_list = []; region_list = []; chart_list = []; }
     }
 
-    private static bool ContentTypeNotAllowed(RequestData request) => request.Headers.TryGetValue("accept", out string? type) && !type.Contains("application/json") && !type.Contains("*/*");
-
     public static async Task<ResponseData> Songs(RequestData request, long[] ids)
     {
+        if (!APIExtensions.ContentTypeIsAllowed(request)) return APIExtensions.UnsupportedContentType;
         ResponseData response = new();
-
-        if (ContentTypeNotAllowed(request))
-        {
-            response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
-            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, "None of the content type(s) requested are supported."));
-            return response;
-        }
 
         if (ids.Count() == 0)
         {
@@ -248,14 +240,7 @@ public class GetSong
 
     public static async Task<ResponseData> RandomSongs(RequestData request, int? diff = null, int? level = null, int? genre = null, bool? includeSayonara = null, int? limit = null)
     {
-
-        if (ContentTypeNotAllowed(request))
-        {
-            ResponseData response = new();
-            response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
-            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, "None of the content type(s) requested are supported."));
-            return response;
-        }
+        if (!APIExtensions.ContentTypeIsAllowed(request)) return APIExtensions.UnsupportedContentType;
 
         DatabaseHandler database = new();
         int count = int.Clamp(limit ?? 1, 1, APISettings.SONG_LIMIT);

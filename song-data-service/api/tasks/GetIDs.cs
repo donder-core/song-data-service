@@ -8,15 +8,10 @@ public class GetIDs
     private static Dictionary<long, long> _sortScore = [];
     public static async Task<ResponseData> Search(RequestData request, string? title = null, string? subtitle = null, int? genre = null, int? diff = null, int? level = null, bool? useAlias = null, bool? includeSayonara = null, bool? titleComparison = null, int? limit = null)
     {
+        if (!APIExtensions.ContentTypeIsAllowed(request)) return APIExtensions.UnsupportedContentType;
+
         ResponseData response = new();
         _sortScore = [];
-
-        if (request.Headers.TryGetValue("accept", out string? type) && !type.Contains("application/json") && !type.Contains("text/plain") && !type.Contains("*/*"))
-        {
-            response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
-            response.Body = JsonConvert.SerializeObject(new ErrorData(response.StatusCode, "None of the content type(s) requested are supported."));
-            return response;
-        }
 
         if (title is null && subtitle is null && genre is null && diff is null && level is null)
         {
@@ -24,8 +19,6 @@ public class GetIDs
             response.StatusCode = (int)HttpStatusCode.OK;
             return response;
         }
-
-        List<long> results = [];
 
         if (genre != null && (genre < 1 || genre > 8))
         {
@@ -55,7 +48,7 @@ public class GetIDs
         long[] diff_ids = diff != null ? SearchByDifficulty(ref database, diff ?? 4) : [];
         long[] level_ids = level != null ? SearchByLevel(ref database, level ?? 0) : [];
 
-        results = FilterSayonara(ref database, includeSayonara is not null and true).ToList();
+        List<long> results = FilterSayonara(ref database, includeSayonara is not null and true).ToList();
         if (title != null) results = results.Intersect(title_ids).ToList();
         if (subtitle != null) results = (titleComparison is not null and false) && (title != null) ? results.Union(subtitle_ids).ToList() : results.Intersect(subtitle_ids).ToList();
         if (genre != null) results = results.Intersect(genre_ids).ToList();
@@ -67,15 +60,7 @@ public class GetIDs
 
         database.Dispose();
 
-        string content_type = request.Headers.TryGetValue("accept", out string? value) ? value.Trim() : "";
-        if (content_type.StartsWith("text/plain"))
-        {
-            response.ContentType = "text/plain; charset=utf-8";
-            response.Body = string.Join(',', results);
-        }
-        else
-            response.Body = JsonConvert.SerializeObject(results);
-
+        response.Body = JsonConvert.SerializeObject(results);
         response.StatusCode = (int)HttpStatusCode.OK;
 
         return response;

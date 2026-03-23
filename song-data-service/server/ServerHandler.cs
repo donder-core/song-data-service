@@ -104,6 +104,9 @@ namespace SongDataService
                                         limit: queries.TryGetValue("limit", out var ran_limit) ? (int.TryParse(ran_limit, out int ran_limit_result) ? ran_limit_result : null) : null
                                     ));
                                     break;
+                                case "stats":
+                                    await SendResponseAsync(response, await GetStats.AllStats(requestData));
+                                    break;
                                 case "docs":
                                     await SendResponseAsync(response, new()
                                     {

@@ -43,7 +43,7 @@ namespace SongDataService
                 response.Headers.Add("Access-Control-Allow-Origin", "*");
 
                 Dictionary<string, string> queries = [];
-                string query = request.Url?.Query ?? "";
+                string query = Uri.UnescapeDataString(request.Url?.Query ?? "");
                 string data = Uri.UnescapeDataString((request.Url?.AbsoluteUri ?? "").Replace(APISettings.SERVER_URL, ""));
                 if (!string.IsNullOrWhiteSpace(query)) data = data.Replace(query, "");
 

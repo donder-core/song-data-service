@@ -246,7 +246,7 @@ public class GetSong
         int count = int.Clamp(limit ?? 1, 1, APISettings.SONG_LIMIT);
         
         List<long> diff_ids = diff is not null ? GetIDs.SearchByDifficulty(ref database, (int)diff).ToList() : [];
-        List<long> level_ids = level is not null ? GetIDs.SearchByLevel(ref database, (int)level).ToList() : [];
+        List<long> level_ids = level is not null ? GetIDs.SearchByLevel(ref database, (int)level, diff).ToList() : [];
         List<long> genre_ids = genre is not null ? GetIDs.SearchByGenre(ref database, (int)genre).ToList() : [];
 
         List<long> ids = GetIDs.FilterSayonara(ref database, includeSayonara ?? false).ToList();

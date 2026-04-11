@@ -135,12 +135,18 @@ public class GetIDs
         return ProcessResult(database.Query(query));
     }
 
-    public static long[] SearchByLevel(ref DatabaseHandler database, int level)
+    public static long[] SearchByLevel(ref DatabaseHandler database, int level, int? diff = null)
     {
         string query = @$"
         SELECT DISTINCT level.id FROM level
         WHERE level.level = {level}
         ";
+
+        if (diff is not null)
+        query = @$"
+        SELECT DISTINCT level.id FROM level
+        WHERE level.level = {level}
+        AND level.diff = {diff}";
 
         return ProcessResult(database.Query(query));
     }
